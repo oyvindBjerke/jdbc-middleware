@@ -1,5 +1,6 @@
 package util;
 
+import no.bjerke.jdbcmiddleware.util.ExceptionUtil;
 import org.junit.Assert;
 import org.junit.Test;
 

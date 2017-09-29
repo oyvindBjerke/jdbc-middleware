@@ -1,4 +1,4 @@
-package util;
+package no.bjerke.jdbcmiddleware.util;
 
 import java.util.concurrent.Callable;
 

@@ -1,4 +1,4 @@
-package domain;
+package no.bjerke.jdbcmiddleware.domain;
 
 import org.junit.Before;
 import org.junit.Test;

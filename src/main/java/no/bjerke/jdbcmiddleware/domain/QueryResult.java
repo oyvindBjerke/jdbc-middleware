@@ -1,6 +1,6 @@
-package domain;
+package no.bjerke.jdbcmiddleware.domain;
 
-import util.ExceptionUtil;
+import no.bjerke.jdbcmiddleware.util.ExceptionUtil;
 
 import java.sql.Date;
 import java.sql.ResultSet;
