@@ -40,6 +40,24 @@ public class JdbcService {
         );
     }
 
+    public Long insertAndReturnKey(String sql, String keyColumn, Object... args) {
+        return withConnection(connection ->
+                withStatementAndReturnGeneratedKeys(connection, sql, Arrays.asList(args), statement ->
+                        executeInsert(statement, keyColumn)
+                )
+        );
+
+    }
+
+    public void insert(String sql, Object... args) {
+        withConnection(connection ->
+                withStatement(connection, sql, Arrays.asList(args), statement -> {
+                    executeInsert(statement);
+                    return null;
+                })
+        );
+    }
+
     private <R> R withConnection(ConnectionCallback<R> callback) {
         try(Connection connection = dataSource.getConnection()) {
             return callback.run(connection);
@@ -55,10 +73,7 @@ public class JdbcService {
         }
         LOGGER.debug("Executing query: '{}' with values {}", sql, args);
         try(PreparedStatement statement = connection.prepareStatement(sql)) {
-            for(int i = 1; i < args.size() + 1; i++) {
-                setArg(statement, i, args.get(i - 1));
-            }
-            final R result = callback.run(statement);
+            final R result = executeStatement(statement, args, callback);
             LOGGER.info("Executed query: '{}' with values {}", sql, args);
             return result;
         }
@@ -68,6 +83,36 @@ public class JdbcService {
         catch(SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private <R> R withStatementAndReturnGeneratedKeys(
+            Connection connection,
+            String sql,
+            List<Object> args,
+            StatementCallback<R> callback
+    ) {
+        if(sql == null || sql.isEmpty()) {
+            throw new IllegalArgumentException("SQL String cannot be blank or null");
+        }
+        LOGGER.debug("Executing query: '{}' with values {}", sql, args);
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            final R result = executeStatement(statement, args, callback);
+            LOGGER.info("Executed query: '{}' with values {}", sql, args);
+            return result;
+        }
+        catch(SQLSyntaxErrorException e) {
+            throw new MalformedSqlException(e);
+        }
+        catch(SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private <R> R executeStatement(PreparedStatement statement, List<Object> args, StatementCallback<R> callback) {
+        for(int i = 1; i < args.size() + 1; i++) {
+            setArg(statement, i, args.get(i - 1));
+        }
+        return callback.run(statement);
     }
 
     private <R> Optional<R> executeSingle(PreparedStatement preparedStatement, RowMapper<R> rowMapper) {
@@ -96,6 +141,44 @@ public class JdbcService {
                 resultList.add(rowMapper.mapRow(queryResult));
             }
             return resultList;
+        }
+        catch(SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Long executeInsert(PreparedStatement statement, String keyColumn) {
+        if(keyColumn == null || keyColumn.isEmpty()) {
+            throw new IllegalArgumentException("Key column must be specified");
+        }
+        try {
+            final int numberOfRowsAffected = statement.executeUpdate();
+            if(numberOfRowsAffected <= 0) {
+                throw new IllegalStateException("No rows was inserted");
+            }
+            ResultSet generatedKeys = statement.getGeneratedKeys();
+            if(generatedKeys.next()) {
+                try {
+                    return generatedKeys.getLong(keyColumn);
+                }
+                catch(SQLException e) {
+                    LOGGER.warn("Unable to find generated key for column '{}'", keyColumn);
+                    throw new MalformedSqlException(e);
+                }
+            }
+            throw new IllegalStateException("No ID (key) was generated");
+        }
+        catch(SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void executeInsert(PreparedStatement statement) {
+        try {
+            final int numberOfRowsAffected = statement.executeUpdate();
+            if(numberOfRowsAffected <= 0) {
+                throw new IllegalStateException("No rows was inserted");
+            }
         }
         catch(SQLException e) {
             throw new RuntimeException(e);

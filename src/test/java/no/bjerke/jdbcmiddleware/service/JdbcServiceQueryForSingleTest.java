@@ -20,7 +20,7 @@ public class JdbcServiceQueryForSingleTest {
     @Before
     public void setUp() throws Exception {
         final JDBCDataSource dataSource = HsqlUtil.setupDataSource();
-        HsqlUtil.createCustomerTable(dataSource);
+        HsqlUtil.createCustomerTableAndInsertJonSnow(dataSource);
         jdbcService = new JdbcService(dataSource);
     }
 
