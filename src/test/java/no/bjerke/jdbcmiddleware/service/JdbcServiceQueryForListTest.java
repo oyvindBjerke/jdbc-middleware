@@ -1,5 +1,6 @@
 package no.bjerke.jdbcmiddleware.service;
 
+import no.bjerke.jdbcmiddleware.HsqlUtil;
 import no.bjerke.jdbcmiddleware.exception.MalformedSqlException;
 import org.hsqldb.jdbc.JDBCDataSource;
 import org.junit.Before;

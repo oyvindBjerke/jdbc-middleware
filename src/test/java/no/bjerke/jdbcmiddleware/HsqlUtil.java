@@ -1,4 +1,4 @@
-package no.bjerke.jdbcmiddleware.service;
+package no.bjerke.jdbcmiddleware;
 
 import org.hsqldb.jdbc.JDBCDataSource;
 

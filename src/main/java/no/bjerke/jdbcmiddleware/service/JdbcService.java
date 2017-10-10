@@ -58,6 +58,26 @@ public class JdbcService {
         );
     }
 
+    public void updateSingle(String sql, Object... args) {
+        withConnection(connection ->
+                withStatement(connection, sql, Arrays.asList(args), statement -> {
+                    try {
+                        int rowsAffected = statement.executeUpdate();
+                        if(rowsAffected > 1) {
+                            throw new IllegalStateException("More than one row was affected by query: '" + sql + "'");
+                        }
+                        if(rowsAffected < 1) {
+                            throw new IllegalStateException("No row was affected by query: '" + sql + "'");
+                        }
+                    }
+                    catch(SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                })
+        );
+    }
+
     private <R> R withConnection(ConnectionCallback<R> callback) {
         try(Connection connection = dataSource.getConnection()) {
             return callback.run(connection);
