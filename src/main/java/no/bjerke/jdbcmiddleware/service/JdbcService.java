@@ -78,6 +78,19 @@ public class JdbcService {
         );
     }
 
+    public Integer update(String sql, Object... args) {
+        return withConnection(connection ->
+                withStatement(connection, sql, Arrays.asList(args), statement -> {
+                    try {
+                        return statement.executeUpdate();
+                    }
+                    catch(SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+        );
+    }
+
     private <R> R withConnection(ConnectionCallback<R> callback) {
         try(Connection connection = dataSource.getConnection()) {
             return callback.run(connection);
