@@ -64,7 +64,8 @@ jdbcService.insert("INSERT INTO employee (name) VALUES (?)", "Gregor Clegane");
 Or, how about inserting a row where we want to get an auto generated key back as a result.
 
 ```java
-Long id = jdbcService.insertAndReturnKey("INSERT INTO employee (name) VALUES (?)", "Jon Snow");
+String idColumnName = "id";
+Long id = jdbcService.insertAndReturnKey("INSERT INTO employee (name) VALUES (?)", idColumnName, "Jon Snow");
 ```
 
 ### And more
