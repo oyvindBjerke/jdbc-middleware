@@ -91,6 +91,14 @@ public class JdbcService {
         );
     }
 
+    public void deleteSingle(String sql, Object... args) {
+        updateSingle(sql, args);
+    }
+
+    public Integer delete(String sql, Object... args) {
+        return update(sql, args);
+    }
+
     private <R> R withConnection(ConnectionCallback<R> callback) {
         try(Connection connection = dataSource.getConnection()) {
             return callback.run(connection);
