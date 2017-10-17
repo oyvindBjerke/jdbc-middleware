@@ -12,7 +12,7 @@
 
     <groupId>com.github.oyvindbjerke</groupId>
     <artifactId>jdbc-middleware</artifactId>
-    <version>0.2</version>
+    <version>0.3-SNAPSHOT</version>
 
     <distributionManagement>
         <snapshotRepository>
