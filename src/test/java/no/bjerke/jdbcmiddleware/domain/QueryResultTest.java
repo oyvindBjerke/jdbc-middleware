@@ -56,6 +56,21 @@ public class QueryResultTest {
     }
 
     @Test
+    public void get_double_with_no_value_should_return_empty() throws SQLException {
+        when(resultSetMock.getDouble(any())).thenReturn(0D);
+        when(resultSetMock.wasNull()).thenReturn(true);
+        final Optional<Double> averageRating = queryResult.getDouble("averageRating");
+        assertFalse(averageRating.isPresent());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void require_double_with_no_value_should_return_empty() throws SQLException {
+        when(resultSetMock.getDouble(any())).thenReturn(0D);
+        when(resultSetMock.wasNull()).thenReturn(true);
+        queryResult.requireDouble("averageRating");
+    }
+
+    @Test
     public void get_long_with_no_value_should_return_empty() throws SQLException {
         when(resultSetMock.getLong(any())).thenReturn(0L);
         when(resultSetMock.wasNull()).thenReturn(true);
@@ -83,6 +98,21 @@ public class QueryResultTest {
         when(resultSetMock.getLong(any())).thenReturn(1L);
         final Long balance = queryResult.requireLong("balance");
         assertEquals((Long)1L, balance);
+    }
+
+    @Test
+    public void get_double_with_value_should_return_optional_of_expected_value() throws SQLException {
+        when(resultSetMock.getDouble(any())).thenReturn(1.5);
+        final Optional<Double> averageSum = queryResult.getDouble("averageSum");
+        assertTrue(averageSum.isPresent());
+        assertEquals((Double)1.5, averageSum.get());
+    }
+
+    @Test
+    public void require_double_with_value_should_return_expected_value() throws SQLException {
+        when(resultSetMock.getDouble(any())).thenReturn(1.5);
+        final Double averageSum = queryResult.requireDouble("averageSum");
+        assertEquals((Double)1.5, averageSum);
     }
 
     @Test
@@ -179,4 +209,8 @@ public class QueryResultTest {
         assertEquals(now, registeredDate);
     }
 
+    @Test
+    public void get_result_set_should_return_expected_result_set() {
+        assertEquals(resultSetMock, queryResult.getResultSet());
+    }
 }

@@ -34,6 +34,14 @@ public class QueryResult {
         return emptyOrValueIfNotWasNull(rs -> ExceptionUtil.soften(() -> rs.getInt(columnName)));
     }
 
+    public Double requireDouble(String columnName) {
+        return getDouble(columnName).orElseThrow(getMissingColumnException(columnName));
+    }
+
+    public Optional<Double> getDouble(String columnName) {
+        return emptyOrValueIfNotWasNull(rs -> ExceptionUtil.soften(() -> rs.getDouble(columnName)));
+    }
+
     public Long requireLong(String columnName) {
         return getLong(columnName).orElseThrow(getMissingColumnException(columnName));
     }
@@ -67,4 +75,7 @@ public class QueryResult {
         return ExceptionUtil.soften(resultSet::wasNull) ? Optional.empty() : Optional.of(value);
     }
 
+    public ResultSet getResultSet() {
+        return resultSet;
+    }
 }
