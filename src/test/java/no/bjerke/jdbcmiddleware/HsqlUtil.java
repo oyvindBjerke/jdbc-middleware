@@ -11,7 +11,6 @@ public class HsqlUtil {
     public static JDBCDataSource setupDataSource() throws SQLException {
         final JDBCDataSource jdbcDataSource = new JDBCDataSource();
         jdbcDataSource.setDatabase("jdbc:hsqldb:mem:db");
-        jdbcDataSource.setUrl("sa");
         Statement statement = jdbcDataSource.getConnection().createStatement();
         statement.addBatch("DROP SCHEMA public CASCADE");
         statement.executeBatch();
