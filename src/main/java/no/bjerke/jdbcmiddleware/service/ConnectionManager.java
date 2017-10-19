@@ -109,7 +109,7 @@ public class ConnectionManager {
     }
 
     public boolean isTransactionInProgress() {
-        return transactionConnection != null;
+        return transactionConnection.get() != null;
     }
 
 }
