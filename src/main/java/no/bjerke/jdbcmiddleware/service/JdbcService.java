@@ -1,6 +1,5 @@
 package no.bjerke.jdbcmiddleware.service;
 
-import no.bjerke.jdbcmiddleware.domain.ConnectionCallback;
 import no.bjerke.jdbcmiddleware.domain.QueryResult;
 import no.bjerke.jdbcmiddleware.domain.RowMapper;
 import no.bjerke.jdbcmiddleware.domain.StatementCallback;
@@ -18,14 +17,29 @@ public class JdbcService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcService.class);
 
-    private final DataSource dataSource;
+    private final ConnectionManager connectionManager;
 
+
+    /**
+     * Use this constructor if you intend to use transaction functionality
+     *
+     * @param connectionManager connection manager used for managing connections
+     */
+    public JdbcService(ConnectionManager connectionManager) {
+        this.connectionManager = Objects.requireNonNull(connectionManager);
+    }
+
+    /**
+     * Use this constructor if you don't intend to use transaction functionality
+     *
+     * @param dataSource the data source to be used for connection management
+     */
     public JdbcService(DataSource dataSource) {
-        this.dataSource = Objects.requireNonNull(dataSource);
+        this.connectionManager = new ConnectionManager(Objects.requireNonNull(dataSource));
     }
 
     public <T> Optional<T> queryForSingle(String sql, RowMapper<T> rowMapper, Object... args) {
-        return withConnection(connection ->
+        return connectionManager.doWithConnection(connection ->
                 withStatement(connection, sql, Arrays.asList(args), statement ->
                         executeSingle(statement, rowMapper)
                 )
@@ -33,7 +47,7 @@ public class JdbcService {
     }
 
     public <T> List<T> queryForList(String sql, RowMapper<T> rowMapper, Object... args) {
-        return withConnection(connection ->
+        return connectionManager.doWithConnection(connection ->
                 withStatement(connection, sql, Arrays.asList(args), statement ->
                         executeList(statement, rowMapper)
                 )
@@ -41,7 +55,7 @@ public class JdbcService {
     }
 
     public Long insertAndReturnKey(String sql, String keyColumn, Object... args) {
-        return withConnection(connection ->
+        return connectionManager.doWithConnection(connection ->
                 withStatementAndReturnGeneratedKeys(connection, sql, Arrays.asList(args), statement ->
                         executeInsert(statement, keyColumn)
                 )
@@ -50,7 +64,7 @@ public class JdbcService {
     }
 
     public void insert(String sql, Object... args) {
-        withConnection(connection ->
+        connectionManager.doWithConnection(connection ->
                 withStatement(connection, sql, Arrays.asList(args), statement -> {
                     executeInsert(statement);
                     return null;
@@ -59,7 +73,7 @@ public class JdbcService {
     }
 
     public void updateSingle(String sql, Object... args) {
-        withConnection(connection ->
+        connectionManager.doWithConnection(connection ->
                 withStatement(connection, sql, Arrays.asList(args), statement -> {
                     try {
                         int rowsAffected = statement.executeUpdate();
@@ -79,7 +93,7 @@ public class JdbcService {
     }
 
     public Integer update(String sql, Object... args) {
-        return withConnection(connection ->
+        return connectionManager.doWithConnection(connection ->
                 withStatement(connection, sql, Arrays.asList(args), statement -> {
                     try {
                         return statement.executeUpdate();
@@ -97,15 +111,6 @@ public class JdbcService {
 
     public Integer delete(String sql, Object... args) {
         return update(sql, args);
-    }
-
-    private <R> R withConnection(ConnectionCallback<R> callback) {
-        try(Connection connection = dataSource.getConnection()) {
-            return callback.run(connection);
-        }
-        catch(SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private <R> R withStatement(Connection connection, String sql, List<Object> args, StatementCallback<R> callback) {
