@@ -35,7 +35,6 @@ import no.bjerke.jdbcmiddleware.service.JdbcService;
 
 JDBCDataSource jdbcDataSource = new JDBCDataSource(); // lets use a HSQL datasource for this example
 jdbcDataSource.setDatabase("jdbc:hsqldb:mem:db");
-jdbcDataSource.setUrl("sa");
 JdbcService jdbcService = new JdbcService(dataSource);
 ```
 Congratulations, you've now got a ready to go JdbcService!
