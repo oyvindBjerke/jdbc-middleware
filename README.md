@@ -1,5 +1,14 @@
 # jdbc-middleware
 
+## Maven dependency
+```xml
+<dependency>
+    <groupId>com.github.oyvindbjerke</groupId>
+    <artifactId>jdbc-middleware</artifactId>
+    <version>0.3</version>
+</dependency>
+```
+
 ## What is jdbc-middleware
 jdbc-middleware attempts to simplify interaction with the java JDBC API, by acting as a thin abstraction layer.
 
@@ -8,7 +17,7 @@ jdbc-middleware is **not** an ORM. It does not attempt to shield a developer fro
 
 ## Features
 * Simpler interactions with JDBC
-* Transactions (TODO)
+* Transactions
 * Ability to interect directly with the datasource when needed
 * No dependencies aside from the slf4j-api
 
@@ -67,6 +76,29 @@ Or, how about inserting a row where we want to get an auto generated key back as
 String idColumnName = "id";
 Long id = jdbcService.insertAndReturnKey("INSERT INTO employee (name) VALUES (?)", idColumnName, "Jon Snow");
 ```
+
+### Transactions
+
+Annother use case might be that we want to do one or multiple statements inside a transaction. In order to do so, we need to initialize ```JdbcService``` with a ```ConnectionManager```, instead of giving it a ```DataSource``` directly. We also need to instantiate a ```TransactionManager``` which will be used to manage transactions.
+
+```Java
+DataSource dataSource = // create some data source
+final ConnectionManager connectionManager = new ConnectionManager(dataSource);
+final TransactionManager transactionManager = new TransactionManager(connectionManager);
+final JdbcService jdbcService = new JdbcService(connectionManager);
+```
+
+We now have a ```JdbcService``` we can use to execute queries and a ```TransactionManager``` we can use to manage transactions.
+
+So how do we actually execute statements inside a transaction? Like so:
+
+```java
+transactionManager.doInTransaction(() -> {
+    jdbcService.deleteSingle("DELETE FROM customer WHERE id = ?", 1);
+    throw new RuntimeException("Something went wrong!");
+});
+```
+In this scenario the delete statement would be rolled back, due to an unhandled exception being thrown inside the ```Runnable``` the ```TransactionManager``` is executing.
 
 ### And more
 
