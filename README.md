@@ -3,9 +3,9 @@
 ## Maven dependency
 ```xml
 <dependency>
-    <groupId>com.github.oyvindbjerke</groupId>
+    <groupId>no.obje</groupId>
     <artifactId>jdbc-middleware</artifactId>
-    <version>0.3</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -31,7 +31,7 @@ First, instantiate an instance of the ```JdbcService```, which will be the acces
 
 ```java
 import org.hsqldb.jdbc.JDBCDataSource;
-import no.bjerke.jdbcmiddleware.service.JdbcService;
+import JdbcService;
 
 JDBCDataSource jdbcDataSource = new JDBCDataSource(); // lets use a HSQL datasource for this example
 jdbcDataSource.setDatabase("jdbc:hsqldb:mem:db");

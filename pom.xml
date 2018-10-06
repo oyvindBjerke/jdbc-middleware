@@ -10,9 +10,9 @@
         <version>9</version>
     </parent>
 
-    <groupId>com.github.oyvindbjerke</groupId>
+    <groupId>no.obje</groupId>
     <artifactId>jdbc-middleware</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <distributionManagement>
         <snapshotRepository>
